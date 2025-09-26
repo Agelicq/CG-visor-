@@ -1,3 +1,5 @@
+#para ver los cambios reflejados commit
+
 import tkinter as tk
 
 
@@ -6,7 +8,10 @@ ventana = tk.Tk()
 ventana.geometry("500x500")
 
 etiqueta = tk.Label(ventana, text="Hola mundo")
-etiqueta.pack()
+#se pone en pantalla y centrado 
+#etiqueta.pack()
+#cambia la posicion
+etiqueta.pack(side=tk.BOTTOM)
 
 #crea la venta 
 ventana.mainloop()
