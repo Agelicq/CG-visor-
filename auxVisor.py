@@ -7,10 +7,10 @@ from tkinter import filedialog, messagebox
 
 
 def ajusteBrillo(img, brillo):
-    imgArray = np.array(img, dtype = np.float32) #convierte la imagen a un array de numpy
+    imgArray = np.array(img, dtype=np.float32)  # convierte la imagen a un array de numpy
     imgArray = imgArray / 255
     imgBrillo = imgArray + brillo
-    return Image.fromarray((imgBrillo*255).astype(np.uint8))
+    return Image.fromarray((imgBrillo * 255).astype(np.uint8))
 
 def ajusteContraste(img, contraste, tipo):
     #1 zonas oscuras en detrimento de las claras
