@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
+from PIL import Image, ImageDraw
 
 #Funciones auxiliares para el visor de imagenes
 
@@ -169,3 +169,47 @@ def histogramas(img):
 
     plt.tight_layout()
     plt.show()
+
+def overlay(img_proc: Image.Image, label_size: tuple[int, int], rect: tuple[int,int,int,int]):
+    if img_proc is None:
+        return None, (0,0)
+    ancho, alto = label_size
+    img_w, img_h = img_proc.size
+
+    offset_x = max(0, (ancho - img_w) // 2)
+    offset_y = max(0, (alto - img_h) // 2)
+
+    overlay_img = Image.new('RGBA', (ancho, alto), (255,255,255,0))
+    img = img_proc.convert('RGBA')
+    overlay_img.paste(img, (offset_x, offset_y))
+
+    x1,y1,x2,y2 = rect
+    draw = ImageDraw.Draw(overlay_img)
+    draw.rectangle([x1,y1,x2,y2], outline='black', width = 3)
+
+    return overlay_img, (offset_x, offset_y)
+
+def cortar_redimensionar(img_proc: Image.Image, offsets: tuple[int, int], rect: tuple[int,int,int,int], out_size: tuple[int,int]):
+    if img_proc is None:
+        return None
+    offset_x, offset_y = offsets
+    x1,y1,x2,y2 = rect
+
+    ix1 = x1 - offset_x
+    iy1 = y1 - offset_y
+    ix2 = x2 - offset_x
+    iy2 = y2 - offset_y
+
+    img_w, img_h = img_proc.size
+
+    left = max(0, min(img_w, int(min(ix1, ix2))))
+    top  = max(0, min(img_h, int(min(iy1, iy2))))
+    right= max(0, min(img_w, int(max(ix1, ix2))))
+    bottom=max(0, min(img_h, int(max(iy1, iy2))))
+
+    if right - left < 1 or bottom - top < 1:
+        return None
+    
+    region = img_proc.crop((left, top, right, bottom))
+    region_zoom = region.resize(out_size, Image.LANCZOS)
+    return region_zoom
