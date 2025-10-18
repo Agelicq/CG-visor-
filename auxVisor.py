@@ -1,3 +1,13 @@
+"""
+Módulo de funciones auxiliares para procesamiento de imágenes.
+
+Este módulo contiene funciones para aplicar diversos ajustes y transformaciones
+a imágenes digitales, incluyendo operaciones de brillo, contraste, filtros de
+color, binarización, fusión, rotación e histogramas.
+
+Autor: Maria Angélica Alvarez Giraldo
+Fecha: Octubre 2025
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
@@ -5,6 +15,17 @@ from PIL import Image, ImageDraw
 #Funciones auxiliares para el visor de imagenes
 
 def ajusteBrillo(img, brillo):
+    """
+    Ajusta el brillo de una imagen.
+    
+    Args:
+        img (PIL.Image.Image): Imagen a procesar.
+        brillo (float): Factor de brillo a aplicar (-1.0 a 1.0).
+            Valores positivos aumentan el brillo, negativos lo disminuyen.
+    
+    Returns:
+        PIL.Image.Image: Imagen con el brillo ajustado.
+    """
     imgArray = np.array(img)  # convierte la imagen a un array de numpy
     imgArray = imgArray/255
     imgBrillo = imgArray + brillo
@@ -12,6 +33,19 @@ def ajusteBrillo(img, brillo):
     return Image.fromarray((imgBrillo * 255).astype(np.uint8))
 
 def ajusteContraste(img, contraste, tipo):
+    """
+    Ajusta el contraste de una imagen priorizando zonas claras u oscuras.
+    
+    Args:
+        img (PIL.Image.Image): Imagen a procesar.
+        contraste (float): Factor de contraste a aplicar.
+        tipo (int): Tipo de ajuste de contraste:
+            1 - Prioriza zonas oscuras (función logarítmica).
+            2 - Prioriza zonas claras (función exponencial).
+    
+    Returns:
+        PIL.Image.Image: Imagen con el contraste ajustado.
+    """
     #1 zonas oscuras en detrimento de las claras
     #2 zonas claras en detrimento de las oscuras 
     imgArray = np.array(img, dtype = np.float32) 
@@ -27,6 +61,15 @@ def ajusteContraste(img, contraste, tipo):
         return Image.fromarray((imgContraste2*255).astype(np.uint8))    
 
 def capaRoja(img):
+    """
+    Extrae únicamente el canal rojo de la imagen.
+    
+    Args:
+        img (PIL.Image.Image): Imagen RGB a procesar.
+    
+    Returns:
+        PIL.Image.Image: Imagen con solo el canal rojo activo.
+    """
     imgArray = np.array(img, dtype=np.float32)
     imgArray = imgArray / 255
     #imgArray = np.copy(img)
@@ -34,48 +77,132 @@ def capaRoja(img):
     return Image.fromarray((imgArray * 255).astype(np.uint8))
 
 def capaVerde(img):
+    """
+    Extrae únicamente el canal verde de la imagen.
+    
+    Args:
+        img (PIL.Image.Image): Imagen RGB a procesar.
+    
+    Returns:
+        PIL.Image.Image: Imagen con solo el canal verde activo.
+    """
     imgArray = np.array(img, dtype = np.float32)
     imgArray = imgArray/255
     imgArray[:,:,0] = imgArray[:,:,2] = 0
     return Image.fromarray((imgArray * 255).astype(np.uint8))
 
 def capaAzul(img):
+    """
+    Extrae únicamente el canal azul de la imagen.
+    
+    Args:
+        img (PIL.Image.Image): Imagen RGB a procesar.
+    
+    Returns:
+        PIL.Image.Image: Imagen con solo el canal azul activo.
+    """
     imgArray = np.array(img, dtype = np.float32)
     imgArray = imgArray/255
     imgArray[:,:,0] = imgArray[:,:,1] = 0
     return Image.fromarray((imgArray * 255).astype(np.uint8))
 
 def canalCian(img):
+    """
+    Genera el canal cian (combinación de verde y azul).
+    
+    Args:
+        img (PIL.Image.Image): Imagen RGB a procesar.
+    
+    Returns:
+        PIL.Image.Image: Imagen con el canal cian (rojo = 0, verde y azul = 255).
+    """
     imgArray = np.array(img, dtype = np.float32)
     imgArray = imgArray/255
     imgArray[:,:,1] = imgArray[:,:,2] = 1
     return Image.fromarray((imgArray * 255).astype(np.uint8))
 
 def canalMagenta(img):
+    """
+    Genera el canal magenta (combinación de rojo y azul).
+    
+    Args:
+        img (PIL.Image.Image): Imagen RGB a procesar.
+    
+    Returns:
+        PIL.Image.Image: Imagen con el canal magenta (rojo y azul = 255, verde = 0).
+    """
     imgArray = np.array(img, dtype = np.float32)
     imgArray = imgArray/255
     imgArray[:,:,0] = imgArray[:,:,2] = 1
     return Image.fromarray((imgArray * 255).astype(np.uint8))
 
 def canalAmarillo(img):
+    """
+    Genera el canal amarillo (combinación de rojo y verde).
+    
+    Args:
+        img (PIL.Image.Image): Imagen RGB a procesar.
+    
+    Returns:
+        PIL.Image.Image: Imagen con el canal amarillo (rojo y verde = 255, azul = 0).
+    """
     imgArray = np.array(img, dtype = np.float32)
     imgArray = imgArray/255
     imgArray[:,:,0] = imgArray[:,:,1] = 1
     return Image.fromarray((imgArray * 255).astype(np.uint8))
 
 def negroConceptual(img):
+    """
+    Genera una imagen completamente negra (todos los canales en 0).
+    
+    Representa conceptualmente el negro en el modelo CMY.
+    
+    Args:
+        img (PIL.Image.Image): Imagen RGB base (se usa solo para obtener dimensiones).
+    
+    Returns:
+        PIL.Image.Image: Imagen negra del mismo tamaño que la entrada.
+    """
     imgArray = np.array(img, dtype = np.float32)
     imgArray = imgArray/255
     imgArray[:,:,0] = imgArray[:,:,1] = imgArray[:,:,2] = 0
     return Image.fromarray((imgArray * 255).astype(np.uint8))
 
 def negativo(img):
+    """
+    Genera el negativo de una imagen.
+    
+    Invierte los valores de todos los píxeles (255 - valor original).
+    
+    Args:
+        img (PIL.Image.Image): Imagen a invertir.
+    
+    Returns:
+        PIL.Image.Image: Imagen negativa.
+    """
     imgN = np.array(img, dtype = np.float32 )
     imgN = imgN/255
     imgN = 1 - imgN
     return Image.fromarray((imgN * 255).astype(np.uint8))
 
 def rotar_imagen(img, ang):
+    """
+    Rota una imagen en escala de grises usando interpolación manual.
+    
+    Aplica una transformación de rotación píxel por píxel usando
+    matrices de rotación. Convierte imágenes de color a escala de grises.
+    
+    Args:
+        img (PIL.Image.Image o np.ndarray): Imagen a rotar.
+        ang (float): Ángulo de rotación en grados.
+    
+    Returns:
+        PIL.Image.Image: Imagen rotada en escala de grises.
+    
+    Note:
+        Esta función convierte la imagen a escala de grises. Para rotar
+        imágenes a color, usar PIL.Image.rotate() directamente.
+    """
     img = np.array(img, dtype=np.float32)
     if img.ndim == 3:
         # Si la imagen es a color, la convertimos a escala de grises para simplificar
@@ -115,6 +242,17 @@ def rotar_imagen(img, ang):
 
 
 def average(img):
+    """
+    Convierte una imagen RGB a escala de grises usando promedio simple.
+    
+    Calcula el promedio de los tres canales RGB para cada píxel.
+    
+    Args:
+        img (PIL.Image.Image): Imagen RGB a convertir.
+    
+    Returns:
+        np.ndarray: Imagen en escala de grises como array numpy (valores 0-1).
+    """
     img_array = np.array(img, dtype=np.float32)
 
     if img_array.max() > 1.0:
@@ -124,6 +262,20 @@ def average(img):
     return imgGray
 
 def binarizar(img, umbral):
+    """
+    Binariza una imagen usando un umbral específico.
+    
+    Convierte la imagen a escala de grises y luego a blanco y negro
+    según el valor umbral.
+    
+    Args:
+        img (PIL.Image.Image): Imagen a binarizar.
+        umbral (float): Valor umbral (0-1). Píxeles por encima del umbral
+            se vuelven blancos, los demás negros.
+    
+    Returns:
+        PIL.Image.Image: Imagen binarizada en modo 'L' (escala de grises).
+    """
     imgGray = average(img)
     imgBin = (imgGray > umbral)
     
@@ -132,6 +284,24 @@ def binarizar(img, umbral):
     return Image.fromarray(imgBin, mode='L')
 
 def fusionImgEcualizada(img1, img2, factor):
+    """
+    Fusiona dos imágenes usando transparencia.
+    
+    Combina dos imágenes del mismo tamaño aplicando un factor de transparencia
+    para crear una mezcla ponderada.
+    
+    Args:
+        img1 (PIL.Image.Image): Primera imagen (base).
+        img2 (PIL.Image.Image): Segunda imagen (overlay).
+        factor (float): Factor de transparencia (0-1). 
+            1.0 = solo img1, 0.0 = solo img2.
+    
+    Returns:
+        PIL.Image.Image: Imagen fusionada.
+    
+    Note:
+        Ambas imágenes deben tener las mismas dimensiones.
+    """
     img1 = np.array(img1, dtype=np.float32) / 255
     img2 = np.array(img2, dtype=np.float32) / 255
     img3 = (img1*factor + img2*(1-factor))
@@ -139,6 +309,18 @@ def fusionImgEcualizada(img1, img2, factor):
     return Image.fromarray((img3 * 255).astype(np.uint8))
 
 def histogramas(img):
+    """
+    Genera y muestra histogramas de los canales RGB de una imagen.
+    
+    Crea una figura con tres subgráficas mostrando la distribución
+    de intensidades para cada canal de color (rojo, azul, verde).
+    
+    Args:
+        img (PIL.Image.Image o np.ndarray): Imagen RGB a analizar.
+    
+    Note:
+        Muestra los histogramas en una ventana matplotlib interactiva.
+    """
     img = np.array(img)
     if img.max() <= 1:
         img = (img * 255).astype(np.uint8)
@@ -171,6 +353,22 @@ def histogramas(img):
     plt.show()
 
 def overlay(img_proc: Image.Image, label_size: tuple[int, int], rect: tuple[int,int,int,int]):
+    """
+    Crea una imagen overlay con un rectángulo de selección dibujado.
+    
+    Centra la imagen procesada en un canvas del tamaño del label y dibuja
+    un rectángulo sobre ella para visualizar el área de selección.
+    
+    Args:
+        img_proc (PIL.Image.Image): Imagen procesada a mostrar.
+        label_size (tuple[int, int]): Tamaño del canvas (ancho, alto).
+        rect (tuple[int, int, int, int]): Coordenadas del rectángulo (x1, y1, x2, y2).
+    
+    Returns:
+        tuple: (imagen_overlay, (offset_x, offset_y)) donde:
+            - imagen_overlay (PIL.Image.Image): Imagen con el rectángulo dibujado.
+            - offsets (tuple): Desplazamientos de la imagen dentro del canvas.
+    """
     if img_proc is None:
         return None, (0,0)
     ancho, alto = label_size
@@ -190,6 +388,22 @@ def overlay(img_proc: Image.Image, label_size: tuple[int, int], rect: tuple[int,
     return overlay_img, (offset_x, offset_y)
 
 def cortar_redimensionar(img_proc: Image.Image, offsets: tuple[int, int], rect: tuple[int,int,int,int], out_size: tuple[int,int]):
+    """
+    Corta una región de la imagen y la redimensiona al tamaño deseado.
+    
+    Extrae la región seleccionada de la imagen teniendo en cuenta los offsets
+    del canvas, y la redimensiona para llenar el área de visualización.
+    
+    Args:
+        img_proc (PIL.Image.Image): Imagen procesada de origen.
+        offsets (tuple[int, int]): Desplazamiento de la imagen (offset_x, offset_y).
+        rect (tuple[int, int, int, int]): Coordenadas del rectángulo seleccionado
+            en coordenadas del canvas (x1, y1, x2, y2).
+        out_size (tuple[int, int]): Tamaño de salida deseado (ancho, alto).
+    
+    Returns:
+        PIL.Image.Image: Región recortada y redimensionada, o None si la región es inválida.
+    """
     if img_proc is None:
         return None
     offset_x, offset_y = offsets
