@@ -9,7 +9,6 @@ Fecha: Octubre 2025
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import filedialog, messagebox, Scale
@@ -166,7 +165,7 @@ class VisorImagenes:
 
         # ----- OTRAS FUNCIONES -----
         ttk.Button(ventana, text="Zoom área", command=self.activar_zoom_area, bootstyle="info-outline").place(x=1100, y=610)
-        ttk.Button(ventana, text="Histograma", command=self.histo, bootstyle="info-outline").place(x=1100, y=650)
+        ttk.Button(ventana, text="Histograma", command=self.histo, bootstyle="info-outline").place(x=1100, y=660)
 
         # ----- BOTONES INFERIORES -----
         ttk.Button(ventana, text="Restaurar", command=self.cargar_imagen,  bootstyle="info-outline").place(x=1400, y=750)
