@@ -24,7 +24,7 @@ class VisorImagenes:
     diferentes transformaciones como ajustes de brillo, contraste, rotación,
     binarización, filtros de color RGB/CMY, fusión de imágenes y zoom.
     
-    Attributes:
+    Atributos:
         ventana (ttk.Window): Ventana principal de la aplicación.
         ruta_img (str): Ruta de la imagen principal cargada.
         img_original (PIL.Image.Image): Imagen original sin procesar.
@@ -44,7 +44,7 @@ class VisorImagenes:
         self.ventana.title("Visor de imágenes")
         self.ventana.geometry("1750x950")
 
-        # Tema general (puedes probar "flatly", "morph", "darkly", "cyborg", pulse.)
+        # Tema general
         style = ttk.Style("cosmo")
 
 
