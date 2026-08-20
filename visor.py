@@ -42,7 +42,8 @@ class VisorImagenes:
         """
         self.ventana = ventana
         self.ventana.title("Visor de imágenes")
-        self.ventana.geometry("1750x950")
+        self.ventana.geometry("1400x820")
+        self.ventana.minsize(900, 650)
 
         # Tema general
         style = ttk.Style("cosmo")
@@ -61,17 +62,47 @@ class VisorImagenes:
         # Imagen principal
         self.label_img = ttk.Label(
             ventana,
-            text="Espacio para la imagen\nLa imagen debe estar entre (1000x660)",
+            text="Espacio para la imagen\nLa imagen debe estar entre (1000x550)",
             anchor="center",
             bootstyle="secondary",
             background="#E9D5FF",
             font=fuente
         )
-        self.label_img.place(x=40, y=130, width=1000, height=660)
+        self.label_img.place(x=40, y=130, width=1000, height=550)
 
         self.ruta_img = None
         self.img_original = None #imagen
         self.img_tk = None #imagen para tkinter
+
+        # Panel de control desplazable (solo ajuste visual)
+        self.panel_container = ttk.Frame(ventana)
+        self.panel_container.place(relx=1.0, y=0, relheight=1.0, width=340, anchor="ne")
+
+        self.panel_canvas = tk.Canvas(
+            self.panel_container,
+            highlightthickness=0,
+            background="#F7F7F9"
+        )
+        self.panel_scrollbar = ttk.Scrollbar(
+            self.panel_container,
+            orient="vertical",
+            command=self.panel_canvas.yview,
+            bootstyle="info-round"
+        )
+        self.panel_canvas.configure(yscrollcommand=self.panel_scrollbar.set)
+
+        self.panel_scrollbar.pack(side="right", fill="y")
+        self.panel_canvas.pack(side="left", fill="both", expand=True)
+
+        self.panel = ttk.Frame(self.panel_canvas)
+        self.panel.configure(width=320, height=800)
+        self.panel_window = self.panel_canvas.create_window((0, 0), window=self.panel, anchor="nw")
+
+        self.panel.bind("<Configure>", self._actualizar_scroll_panel)
+        self.panel_canvas.bind("<Configure>", self._ajustar_ancho_panel)
+        self.panel.bind("<Enter>", self._activar_scroll_rueda)
+        self.panel.bind("<Leave>", self._desactivar_scroll_rueda)
+        self.panel_canvas.after_idle(self._actualizar_scroll_panel)
 
 
         # Ruta imagen
@@ -79,97 +110,117 @@ class VisorImagenes:
             ventana, text="Ruta:", anchor="center",
             font=fuente, bootstyle="info", background="#E9D5FF"
         )
-        self.label_ruta.place(x=40, y=80, width=1000, height=25)
+        self.label_ruta.place(x=40, y=80, width=990, height=25)
 
         # Botones principales
-        ttk.Button(ventana, text="Explorar", command=self.explorar_principal,  bootstyle="info-outline").place(x=1100, y=80)
-        ttk.Button(ventana, text="Cargar", command=self.cargar_imagen,  bootstyle="info-outline").place(x=1180, y=80)
+        ttk.Button(self.panel, text="Explorar", command=self.explorar_principal,  bootstyle="info-outline").place(x=20, y=20, width=130)
+        ttk.Button(self.panel, text="Cargar", command=self.cargar_imagen,  bootstyle="info-outline").place(x=170, y=20, width=130)
 
         # ----- SECCIÓN DE AJUSTES -----
-        ttk.Label(ventana, text="Brillo:", font=fuente).place(x=1100, y=140)
-        self.brilloS = ttk.Scale(ventana, from_=-1, to=1, command=lambda v:self.aplicar_ajustes(),bootstyle="info")
-        self.brilloS.place(x=1180 ,y= 140, width=150)
+        ttk.Label(self.panel, text="Brillo:", font=fuente).place(x=20, y=80)
+        self.brilloS = ttk.Scale(self.panel, from_=-1, to=1, command=lambda v:self.aplicar_ajustes(),bootstyle="info")
+        self.brilloS.place(x=100 ,y= 80, width=170)
 
         # mostrar valor slider
-        self.label_brillo_val = ttk.Label(ventana, text="", foreground="#0A060E")
-        self.label_brillo_val.place(x=1550, y=140)
+        self.label_brillo_val = ttk.Label(self.panel, text="", foreground="#0A060E")
+        self.label_brillo_val.place(x=280, y=80)
         self.brilloS.bind("<B1-Motion>", lambda e: self.mostrar_valor_sliderfloat(e, self.brilloS, self.label_brillo_val))
         
-        ttk.Label(ventana, text="Rotar:", font=fuente).place(x=1100, y=190)
-        self.rotarS = ttk.Scale(ventana, from_=0, to=360,command=lambda v:self.aplicar_ajustes(), bootstyle="info")
-        self.rotarS.place(x=1180, y=190, width=150)
+        ttk.Label(self.panel, text="Rotar:", font=fuente).place(x=20, y=130)
+        self.rotarS = ttk.Scale(self.panel, from_=0, to=360,command=lambda v:self.aplicar_ajustes(), bootstyle="info")
+        self.rotarS.place(x=100, y=130, width=170)
 
-        self.label_rotar_val = ttk.Label(ventana, text="", foreground="#0A060E")
-        self.label_rotar_val.place(x=1550, y=190)
+        self.label_rotar_val = ttk.Label(self.panel, text="", foreground="#0A060E")
+        self.label_rotar_val.place(x=280, y=130)
         self.rotarS.bind("<B1-Motion>", lambda e: self.mostrar_valor_sliderint(e, self.rotarS, self.label_rotar_val))
 
-        ttk.Label(ventana, text="Contraste:", font=fuente).place(x=1100, y=240)
-        self.contrasteS = ttk.Scale(ventana, from_=-1, to=1, command=lambda v:self.aplicar_ajustes(), bootstyle="info")
-        self.contrasteS.place(x=1180, y=240, width=150)
+        ttk.Label(self.panel, text="Contraste:", font=fuente).place(x=20, y=180)
+        self.contrasteS = ttk.Scale(self.panel, from_=-1, to=1, command=lambda v:self.aplicar_ajustes(), bootstyle="info")
+        self.contrasteS.place(x=100, y=180, width=170)
 
         # mostrar valor slider
-        self.label_contraste_val = ttk.Label(ventana, text="", foreground="#0A060E")
-        self.label_contraste_val.place(x=1550, y=235)
+        self.label_contraste_val = ttk.Label(self.panel, text="", foreground="#0A060E")
+        self.label_contraste_val.place(x=280, y=180)
         self.contrasteS.bind("<B1-Motion>", lambda e: self.mostrar_valor_sliderfloat(e, self.contrasteS, self.label_contraste_val))
 
         self.zo = ttk.BooleanVar()
         self.zc = ttk.BooleanVar()
-        ttk.Checkbutton(ventana, text="Zonas oscuras", variable=self.zo, command=self.aplicar_ajustes).place(x=1400, y=230)
-        ttk.Checkbutton(ventana, text="Zonas claras", variable=self.zc, command=self.aplicar_ajustes).place(x=1400, y=255)
+        ttk.Checkbutton(self.panel, text="Zonas oscuras", variable=self.zo, command=self.aplicar_ajustes).place(x=100, y=210)
+        ttk.Checkbutton(self.panel, text="Zonas claras", variable=self.zc, command=self.aplicar_ajustes).place(x=100, y=235)
 
-        ttk.Label(ventana, text="Umbral\nbinarización:", font=fuente).place(x=1100, y=290)
-        self.binS = ttk.Scale(ventana, from_=0, to=1, command=lambda v:self.aplicar_ajustes(), bootstyle="info")
-        self.binS.place(x=1180, y=290, width=150)
+        ttk.Label(self.panel, text="Umbral\nbinarización:", font=fuente).place(x=20, y=280)
+        self.binS = ttk.Scale(self.panel, from_=0, to=1, command=lambda v:self.aplicar_ajustes(), bootstyle="info")
+        self.binS.place(x=100, y=290, width=170)
 
         # mostrar valor slider
-        self.label_bin_val = ttk.Label(ventana, text="", foreground="#0A060E")
-        self.label_bin_val.place(x=1550, y=285)
+        self.label_bin_val = ttk.Label(self.panel, text="", foreground="#0A060E")
+        self.label_bin_val.place(x=280, y=290)
         self.binS.bind("<B1-Motion>", lambda e: self.mostrar_valor_sliderfloat(e, self.binS, self.label_bin_val))
 
         # Check negativo
         self.neg = ttk.BooleanVar()
-        ttk.Checkbutton(ventana, text="Negativo", variable=self.neg, command=self.aplicar_ajustes).place(x=1100, y=340)
+        ttk.Checkbutton(self.panel, text="Negativo", variable=self.neg, command=self.aplicar_ajustes).place(x=20, y=340)
 
         # ----- RGB / CMY -----
-        ttk.Label(ventana, text="RGB:", font=fuenteN, foreground="#4B0082").place(x=1100, y=370)
+        ttk.Label(self.panel, text="RGB:", font=fuenteN, foreground="#4B0082").place(x=20, y=380)
         self.rojo = ttk.BooleanVar()
         self.verde = ttk.BooleanVar()
         self.azul = ttk.BooleanVar()
-        ttk.Checkbutton(ventana, text="Capa Roja", variable=self.rojo, command=self.aplicar_ajustes).place(x=1100, y=395)
-        ttk.Checkbutton(ventana, text="Capa Verde", variable=self.verde, command=self.aplicar_ajustes).place(x=1100, y=420)
-        ttk.Checkbutton(ventana, text="Capa Azul", variable=self.azul, command=self.aplicar_ajustes).place(x=1100, y=445)
+        ttk.Checkbutton(self.panel, text="Capa Roja", variable=self.rojo, command=self.aplicar_ajustes).place(x=20, y=405)
+        ttk.Checkbutton(self.panel, text="Capa Verde", variable=self.verde, command=self.aplicar_ajustes).place(x=20, y=430)
+        ttk.Checkbutton(self.panel, text="Capa Azul", variable=self.azul, command=self.aplicar_ajustes).place(x=20, y=455)
 
-        ttk.Label(ventana, text="CMY:", font=fuenteN, foreground="#4B0082").place(x=1350, y=370)
+        ttk.Label(self.panel, text="CMY:", font=fuenteN, foreground="#4B0082").place(x=170, y=380)
         self.cian = ttk.BooleanVar()
         self.magenta = ttk.BooleanVar()
         self.amarillo = ttk.BooleanVar()
-        ttk.Checkbutton(ventana, text="Capa Cian", variable=self.cian, command=self.aplicar_ajustes).place(x=1350, y=395)
-        ttk.Checkbutton(ventana, text="Capa Magenta", variable=self.magenta, command=self.aplicar_ajustes).place(x=1350, y=420)
-        ttk.Checkbutton(ventana, text="Capa Amarillo", variable=self.amarillo, command=self.aplicar_ajustes).place(x=1350, y=445)
+        ttk.Checkbutton(self.panel, text="Capa Cian", variable=self.cian, command=self.aplicar_ajustes).place(x=170, y=405)
+        ttk.Checkbutton(self.panel, text="Capa Magenta", variable=self.magenta, command=self.aplicar_ajustes).place(x=170, y=430)
+        ttk.Checkbutton(self.panel, text="Capa Amarillo", variable=self.amarillo, command=self.aplicar_ajustes).place(x=170, y=455)
 
         # ----- FUSIÓN -----
-        ttk.Label(ventana, text="Fusionar:", font=fuenteN, foreground="#4B0082").place(x=1100, y=490)
-        ttk.Button(ventana, text="1. Cargar segunda imagen", command=self.explorar_fusion, bootstyle="info-outline").place(x=1100, y=515)
+        ttk.Label(self.panel, text="Fusionar:", font=fuenteN, foreground="#4B0082").place(x=20, y=500)
+        ttk.Button(self.panel, text="1. Cargar segunda imagen", command=self.explorar_fusion, bootstyle="info-outline").place(x=20, y=525)
 
-        self.rutaFusionlabel = ttk.Label(ventana, text="Ruta segunda imagen:", bootstyle="info", background="#E9D5FF")
-        self.rutaFusionlabel.place(x=1350, y=520, width=150, height=20)
+        self.rutaFusionlabel = ttk.Label(self.panel, text="Ruta segunda imagen:", bootstyle="info", background="#E9D5FF", anchor="w")
+        self.rutaFusionlabel.place(x=20, y=555, width=290, height=20)
 
-        ttk.Label(ventana, text="2. Ajustar transparencia", font=fuente).place(x=1100, y=560)
-        self.fusS = ttk.Scale(ventana, from_=0, to=1, command=lambda v:self.aplicar_ajustes(), bootstyle="info")
-        self.fusS.place(x=1350, y=560, width=150)
+        ttk.Label(self.panel, text="2. Ajustar transparencia", font=fuente).place(x=20, y=590)
+        self.fusS = ttk.Scale(self.panel, from_=0, to=1, command=lambda v:self.aplicar_ajustes(), bootstyle="info")
+        self.fusS.place(x=170, y=590, width=100)
 
         # mostrar valor slider
-        self.label_fus_val = ttk.Label(ventana, text="", foreground="#0A060E")
-        self.label_fus_val.place(x=1550, y=560)
+        self.label_fus_val = ttk.Label(self.panel, text="", foreground="#0A060E")
+        self.label_fus_val.place(x=280, y=590)
         self.fusS.bind("<B1-Motion>", lambda e: self.mostrar_valor_sliderfloat(e, self.fusS, self.label_fus_val))
 
         # ----- OTRAS FUNCIONES -----
-        ttk.Button(ventana, text="Zoom área", command=self.activar_zoom_area, bootstyle="info-outline").place(x=1100, y=610)
-        ttk.Button(ventana, text="Histograma", command=self.histo, bootstyle="info-outline").place(x=1100, y=660)
+        ttk.Button(self.panel, text="Zoom área", command=self.activar_zoom_area, bootstyle="info-outline").place(x=20, y=640, width=130)
+        ttk.Button(self.panel, text="Histograma", command=self.histo, bootstyle="info-outline").place(x=170, y=640, width=130)
 
         # ----- BOTONES INFERIORES -----
-        ttk.Button(ventana, text="Restaurar", command=self.cargar_imagen,  bootstyle="info-outline").place(x=1400, y=750)
-        ttk.Button(ventana, text="Guardar", command=self.guardar,  bootstyle="info-outline").place(x=1500, y=750)
+        ttk.Button(self.panel, text="Restaurar", command=self.cargar_imagen,  bootstyle="info-outline").place(x=20, y=700, width=130)
+        ttk.Button(self.panel, text="Guardar", command=self.guardar,  bootstyle="info-outline").place(x=170, y=700, width=130)
+
+    def _actualizar_scroll_panel(self, event=None):
+        """Actualiza la región desplazable del panel de control."""
+        self.panel_canvas.configure(scrollregion=self.panel_canvas.bbox("all"))
+
+    def _ajustar_ancho_panel(self, event):
+        """Ajusta el frame interno al ancho visible del canvas."""
+        self.panel_canvas.itemconfigure(self.panel_window, width=event.width)
+
+    def _activar_scroll_rueda(self, event):
+        """Habilita el scroll con rueda cuando el cursor está sobre el panel."""
+        self.panel_canvas.bind_all("<MouseWheel>", self._scroll_con_rueda)
+
+    def _desactivar_scroll_rueda(self, event):
+        """Deshabilita el scroll global al salir del panel."""
+        self.panel_canvas.unbind_all("<MouseWheel>")
+
+    def _scroll_con_rueda(self, event):
+        """Desplaza verticalmente el panel con la rueda del mouse."""
+        self.panel_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     
     def mostrar_valor_sliderfloat(self, event, slider, label):
